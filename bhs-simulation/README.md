@@ -138,10 +138,10 @@ python bsd_dashboard.py
 
 ![alt text](/baggage-handling-system/assets/BSD.png)
 
-* **Interactive Scrubbing**: Use the horizontal timeline slider to instantly seek to any specific snapshot across the 3,600 ticks to isolate and inspect bottleneck points.
+* **Playback Controls**: Use Play/Pause, Back, Next, or the timeline slider to inspect snapshots and move through the simulation ticks.
+* **Active Issues Queue**: The right-hand panel lists every jammed directed track in the current snapshot, including its fault reason and active bag count. A warning badge marks each jammed track on the network map; issues remain listed even if an edge cannot be mapped.
 * **Visual Status Legend**:
-    * **Charcoal Grey Tracks**: Idle, empty conveyor lines.
-    * **Safety Orange Tracks**: Active lines with moving baggage streams.
-    * **Solid Crimson Red Tracks**: Broken conveyor segments currently experiencing active jams.
-
-The current BSD is a very surface level implementation that can be improved extensively to have better UI/UX. This is an area your team can focus on improving.
+    * **Crimson tracks and `!` badges**: Conveyor segments currently experiencing active jams.
+    * **Safety orange tracks and bag markers**: Active lines carrying baggage.
+    * **Charcoal tracks**: Idle, empty conveyor lines.
+* **Responsive Network Map**: The network scales to the available window while preserving the original node layout and directional lane offsets.
