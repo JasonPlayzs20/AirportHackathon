@@ -42,6 +42,7 @@ class BSDDashboard:
         self.updating_via_slider = False # Prevents recursive slider loop updates
         self.history = {}
         self._last_rendered_issues = None
+        self._last_rendered_transit = None
         self._canvas_render_size = None
 
         self._load_telemetry_data()
@@ -120,7 +121,11 @@ class BSDDashboard:
 
         self.lbl_active_jams = tk.Label(controls, text="Active Blockages: 0",
                                         font=("Segoe UI", 10, "bold"), fg="#ff6577", bg="#0a0a0d")
-        self.lbl_active_jams.pack(side=tk.RIGHT, padx=18)
+        self.lbl_active_jams.pack(side=tk.RIGHT, padx=(8, 18))
+
+        self.lbl_active_bags = tk.Label(controls, text="Active Bags: 0",
+                                        font=("Segoe UI", 10, "bold"), fg="#ffbf69", bg="#0a0a0d")
+        self.lbl_active_bags.pack(side=tk.RIGHT, padx=(12, 8))
 
         content = tk.Frame(self.root, bg="#111115")
         content.pack(fill=tk.BOTH, expand=True, padx=16, pady=14)
@@ -148,30 +153,66 @@ class BSDDashboard:
         issue_panel.pack(side=tk.RIGHT, fill=tk.Y)
         issue_panel.pack_propagate(False)
 
-        issue_header = tk.Frame(issue_panel, bg="#191c25")
-        issue_header.pack(fill=tk.X, padx=16, pady=(16, 10))
+        # --- Top Section: Active Issues (Jammed Tracks) ---
+        issues_section = tk.Frame(issue_panel, bg="#191c25")
+        issues_section.pack(fill=tk.BOTH, expand=True)
+
+        issue_header = tk.Frame(issues_section, bg="#191c25")
+        issue_header.pack(fill=tk.X, padx=16, pady=(16, 6))
         tk.Label(issue_header, text="ACTIVE ISSUES", font=("Segoe UI", 11, "bold"),
                  fg="#f0f2f6", bg="#191c25").pack(side=tk.LEFT)
         self.lbl_issue_count = tk.Label(issue_header, text="0", font=("Consolas", 10, "bold"),
                                         fg="#ff6577", bg="#351e28", padx=8, pady=3)
         self.lbl_issue_count.pack(side=tk.RIGHT)
-        tk.Label(issue_panel, text="CURRENT SNAPSHOT  ·  JAMMED TRACKS", font=("Segoe UI", 8, "bold"),
-                 fg="#818897", bg="#191c25", anchor=tk.W).pack(fill=tk.X, padx=16, pady=(0, 8))
+        tk.Label(issues_section, text="CURRENT SNAPSHOT  ·  JAMMED TRACKS", font=("Segoe UI", 8, "bold"),
+                 fg="#818897", bg="#191c25", anchor=tk.W).pack(fill=tk.X, padx=16, pady=(0, 6))
 
-        issue_body = tk.Frame(issue_panel, bg="#191c25")
-        issue_body.pack(fill=tk.BOTH, expand=True, padx=(12, 8), pady=(0, 12))
+        issue_body = tk.Frame(issues_section, bg="#191c25")
+        issue_body.pack(fill=tk.BOTH, expand=True, padx=(12, 8), pady=(0, 8))
         issue_scrollbar = tk.Scrollbar(issue_body, orient=tk.VERTICAL)
         issue_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         self.issue_text = tk.Text(issue_body, wrap=tk.WORD, state=tk.DISABLED,
                                   bg="#191c25", fg="#e5e8ef", insertbackground="#e5e8ef",
                                   relief=tk.FLAT, borderwidth=0, padx=5, pady=4,
-                                  font=("Segoe UI", 9), yscrollcommand=issue_scrollbar.set)
+                                  font=("Segoe UI", 9), height=8, yscrollcommand=issue_scrollbar.set)
         self.issue_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         issue_scrollbar.config(command=self.issue_text.yview)
         self.issue_text.tag_configure("issue_heading", foreground="#ff8190", font=("Segoe UI", 9, "bold"))
         self.issue_text.tag_configure("issue_reason", foreground="#c6cbd6")
         self.issue_text.tag_configure("issue_bags", foreground="#9da5b5", font=("Consolas", 8))
         self.issue_text.tag_configure("empty_state", foreground="#73c7a2", font=("Segoe UI", 9))
+
+        # Divider between Active Issues and Bags in Transit
+        tk.Frame(issue_panel, bg="#262b38", height=1).pack(fill=tk.X, padx=14, pady=4)
+
+        # --- Bottom Section: Active Bags in Transit ---
+        transit_section = tk.Frame(issue_panel, bg="#191c25")
+        transit_section.pack(fill=tk.BOTH, expand=True)
+
+        transit_header = tk.Frame(transit_section, bg="#191c25")
+        transit_header.pack(fill=tk.X, padx=16, pady=(10, 6))
+        tk.Label(transit_header, text="BAGS IN TRANSIT", font=("Segoe UI", 11, "bold"),
+                 fg="#f0f2f6", bg="#191c25").pack(side=tk.LEFT)
+        self.lbl_transit_count = tk.Label(transit_header, text="0", font=("Consolas", 10, "bold"),
+                                          fg="#ffbf69", bg="#332a1e", padx=8, pady=3)
+        self.lbl_transit_count.pack(side=tk.RIGHT)
+        tk.Label(transit_section, text="CURRENT SNAPSHOT  ·  OCCUPIED TRACKS", font=("Segoe UI", 8, "bold"),
+                 fg="#818897", bg="#191c25", anchor=tk.W).pack(fill=tk.X, padx=16, pady=(0, 6))
+
+        transit_body = tk.Frame(transit_section, bg="#191c25")
+        transit_body.pack(fill=tk.BOTH, expand=True, padx=(12, 8), pady=(0, 12))
+        transit_scrollbar = tk.Scrollbar(transit_body, orient=tk.VERTICAL)
+        transit_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.transit_text = tk.Text(transit_body, wrap=tk.WORD, state=tk.DISABLED,
+                                    bg="#191c25", fg="#e5e8ef", insertbackground="#e5e8ef",
+                                    relief=tk.FLAT, borderwidth=0, padx=5, pady=4,
+                                    font=("Segoe UI", 9), height=8, yscrollcommand=transit_scrollbar.set)
+        self.transit_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        transit_scrollbar.config(command=self.transit_text.yview)
+        self.transit_text.tag_configure("transit_heading", foreground="#ffbf69", font=("Segoe UI", 9, "bold"))
+        self.transit_text.tag_configure("transit_jammed_heading", foreground="#ff8190", font=("Segoe UI", 9, "bold"))
+        self.transit_text.tag_configure("transit_bags", foreground="#c6cbd6", font=("Consolas", 8))
+        self.transit_text.tag_configure("empty_state", foreground="#818897", font=("Segoe UI", 9))
 
     @staticmethod
     def _add_legend_item(parent, color, label, bold=False):
@@ -226,15 +267,20 @@ class BSDDashboard:
 
         tick_data = self.history.get(self.current_tick, {})
         issue_details = []
+        transit_details = []
+        total_active_bags = 0
         progress = self.sub_tick / float(SUB_FRAMES_PER_TICK)
         scale, _, _ = self._canvas_transform()
 
         for edge_id, edge in tick_data.items():
             bags_count = edge["active_bags"]
+            total_active_bags += bags_count
             is_jammed = edge["status"] == "JAMMED"
             if is_jammed:
                 reason = str(edge.get("fault_reason") or "Unspecified fault").strip()
                 issue_details.append((str(edge_id), reason, bags_count))
+            if bags_count > 0:
+                transit_details.append((str(edge_id), bags_count, is_jammed))
 
             base_clean_id = edge_id.replace("_FWD", "").replace("_REV", "")
             parts = base_clean_id.split("_")
@@ -326,10 +372,13 @@ class BSDDashboard:
                                                     tags="dynamic_overlay")
 
         issue_details.sort(key=lambda issue: issue[0])
+        transit_details.sort(key=lambda item: (-item[1], item[0]))
         self._render_issue_list(issue_details)
+        self._render_transit_list(transit_details, total_active_bags)
 
         # Sync readouts
         self.lbl_tick_counter.config(text=f"Tick: {self.current_tick:04d} / {self.max_ticks:04d}")
+        self.lbl_active_bags.config(text=f"Active Bags: {total_active_bags}")
         self.lbl_active_jams.config(text=f"Active Blockages: {len(issue_details)}")
 
         # Update timeline scrubber slider handle smoothly without firing bound callbacks
@@ -361,9 +410,39 @@ class BSDDashboard:
                     direction = "TRACK"
                 self.issue_text.insert(tk.END, f"!  {edge_id}  ·  {direction}\n", "issue_heading")
                 self.issue_text.insert(tk.END, f"   {reason}\n", "issue_reason")
-                self.issue_text.insert(tk.END, f"   {bags_count} active bag(s)\n\n", "issue_bags")
+                self.issue_text.insert(tk.END, f"   {bags_count} bag(s) stuck on this track\n\n", "issue_bags")
 
         self.issue_text.configure(state=tk.DISABLED)
+
+    def _render_transit_list(self, transit_details, total_active_bags):
+        """Refreshes the active bags in transit queue when the current snapshot changes."""
+        snapshot_key = (tuple(transit_details), total_active_bags)
+        if snapshot_key == self._last_rendered_transit:
+            return
+
+        self._last_rendered_transit = snapshot_key
+        self.lbl_transit_count.config(text=str(total_active_bags))
+        self.transit_text.configure(state=tk.NORMAL)
+        self.transit_text.delete("1.0", tk.END)
+
+        if not transit_details:
+            self.transit_text.insert(tk.END, "No bags currently in transit on any track.",
+                                     "empty_state")
+        else:
+            for edge_id, bags_count, is_jammed in transit_details:
+                if edge_id.endswith("_FWD"):
+                    direction = "FORWARD"
+                elif edge_id.endswith("_REV"):
+                    direction = "REVERSE"
+                else:
+                    direction = "TRACK"
+                heading_tag = "transit_jammed_heading" if is_jammed else "transit_heading"
+                prefix = "!" if is_jammed else "•"
+                state_label = "stuck on jammed track" if is_jammed else "in transit"
+                self.transit_text.insert(tk.END, f"{prefix}  {edge_id}  ·  {direction}\n", heading_tag)
+                self.transit_text.insert(tk.END, f"   {bags_count} bag(s) {state_label}\n\n", "transit_bags")
+
+        self.transit_text.configure(state=tk.DISABLED)
 
     def _on_slider_scrub(self, val):
         """Handles instant seek scrubbing along the time axis."""
