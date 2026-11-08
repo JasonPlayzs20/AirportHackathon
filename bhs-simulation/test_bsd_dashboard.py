@@ -95,6 +95,7 @@ def make_dashboard(history=None, max_ticks=3):
     dashboard._last_rendered_issues = None
     dashboard._last_rendered_risks = None
     dashboard._last_rendered_paths = None
+    dashboard._last_rendered_transit = None
     dashboard._canvas_render_size = None
     dashboard._risk_cache = {}
     dashboard._path_cache = {}
@@ -103,13 +104,16 @@ def make_dashboard(history=None, max_ticks=3):
     dashboard.node_visibility = {node_id: FakeVariable(True) for node_id in NODE_COORDINATES}
     dashboard.belts_visible = FakeVariable(True)
     dashboard.lbl_tick_counter = FakeLabel()
+    dashboard.lbl_active_bags = FakeLabel()
     dashboard.lbl_active_jams = FakeLabel()
     dashboard.lbl_moving_bags = FakeLabel()
     dashboard.lbl_issue_count = FakeLabel()
     dashboard.lbl_risk_count = FakeLabel()
+    dashboard.lbl_transit_count = FakeLabel()
     dashboard.issue_text = FakeText()
     dashboard.risk_text = FakeText()
     dashboard.route_text = FakeText()
+    dashboard.transit_text = FakeText()
     dashboard.slider = FakeSlider()
     dashboard.btn_play = FakeButton()
     return dashboard
@@ -136,7 +140,7 @@ class BSDDashboardTests(unittest.TestCase):
         self.assertEqual(dashboard.lbl_issue_count.options["text"], "1")
         self.assertIn("e_JA1_JA2_FWD  ·  FORWARD", dashboard.issue_text.content)
         self.assertIn("Motor overload", dashboard.issue_text.content)
-        self.assertIn("2 active bag(s)", dashboard.issue_text.content)
+        self.assertIn("2 bag(s) stuck on this track", dashboard.issue_text.content)
         self.assertIn("#ff6577", [item[2].get("fill") for item in dashboard.canvas.items
                                   if item[0] == "line"])
         self.assertEqual(len([item for item in dashboard.canvas.items
@@ -160,7 +164,7 @@ class BSDDashboardTests(unittest.TestCase):
 
         self.assertIn("e_UNKNOWN_EDGE_REV  ·  REVERSE", dashboard.issue_text.content)
         self.assertIn("Unspecified fault", dashboard.issue_text.content)
-        self.assertIn("0 active bag(s)", dashboard.issue_text.content)
+        self.assertIn("0 bag(s) stuck on this track", dashboard.issue_text.content)
         self.assertEqual(dashboard.lbl_active_jams.options["text"], "Active Blockages: 1")
         self.assertFalse(any(item[0] == "text" and item[2].get("text") == "!"
                              for item in dashboard.canvas.items))

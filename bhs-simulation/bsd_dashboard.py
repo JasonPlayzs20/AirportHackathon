@@ -141,6 +141,9 @@ class BSDDashboard:
         self.lbl_moving_bags = tk.Label(controls, text="Moving Packages: 0",
                                         font=("TkDefaultFont", 11, "bold"), fg="#73c7a2", bg="#0a0a0d")
         self.lbl_moving_bags.pack(side=tk.RIGHT, padx=12)
+        self.lbl_active_bags = tk.Label(controls, text="Active Bags: 0",
+                                        font=("TkDefaultFont", 11, "bold"), fg="#ffbf69", bg="#0a0a0d")
+        self.lbl_active_bags.pack(side=tk.RIGHT, padx=12)
 
         content = tk.Frame(self.root, bg="#111115")
         content.pack(fill=tk.BOTH, expand=True, padx=16, pady=14)
@@ -222,8 +225,6 @@ class BSDDashboard:
         tk.Label(issues_section, text="CURRENT SNAPSHOT  ·  JAMMED TRACKS", font=("TkDefaultFont", 9, "bold"),
                  fg="#818897", bg="#191c25", anchor=tk.W).pack(fill=tk.X, padx=16, pady=(0, 6))
 
-        issue_body = tk.Frame(issue_panel, bg="#191c25")
-        issue_body.pack(fill=tk.BOTH, expand=True, padx=(12, 8), pady=(0, 6))
         issue_body = tk.Frame(issues_section, bg="#191c25")
         issue_body.pack(fill=tk.BOTH, expand=True, padx=(12, 8), pady=(0, 8))
         issue_scrollbar = tk.Scrollbar(issue_body, orient=tk.VERTICAL)
@@ -473,7 +474,6 @@ class BSDDashboard:
 
         for edge_id, edge in tick_data.items():
             bags_count = max(0, int(edge.get("active_bags", 0)))
-            bags_count = edge["active_bags"]
             total_active_bags += bags_count
             is_jammed = edge["status"] == "JAMMED"
             if is_jammed:
@@ -624,7 +624,8 @@ class BSDDashboard:
 
         # Sync readouts
         self.lbl_tick_counter.config(text=f"Tick: {self.current_tick:04d} / {self.max_ticks:04d}")
-        self.lbl_active_bags.config(text=f"Active Bags: {total_active_bags}")
+        if hasattr(self, "lbl_active_bags"):
+            self.lbl_active_bags.config(text=f"Active Bags: {total_active_bags}")
         self.lbl_active_jams.config(text=f"Active Blockages: {len(issue_details)}")
         self.lbl_moving_bags.config(text=f"Moving Packages: {moving_bags_count}")
 
@@ -768,8 +769,10 @@ class BSDDashboard:
 
     def _render_transit_list(self, transit_details, total_active_bags):
         """Refreshes the active bags in transit queue when the current snapshot changes."""
+        if not hasattr(self, "transit_text") or not hasattr(self, "lbl_transit_count"):
+            return
         snapshot_key = (tuple(transit_details), total_active_bags)
-        if snapshot_key == self._last_rendered_transit:
+        if snapshot_key == getattr(self, "_last_rendered_transit", None):
             return
 
         self._last_rendered_transit = snapshot_key
