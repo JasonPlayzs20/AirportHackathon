@@ -139,9 +139,18 @@ python bsd_dashboard.py
 ![alt text](/baggage-handling-system/assets/BSD.png)
 
 * **Playback Controls**: Use Play/Pause, Back, Next, or the timeline slider to inspect snapshots and move through the simulation ticks.
+* **Click-to-Select Routes**: Click two nodes on the map to inspect paths in both directions between them. The map shows every directed topology path each way, including paths blocked by current jams, and hides unrelated belts and bags; if the network only connects the pair in one direction, the other direction is reported as unavailable. Blocked segments remain visible in their normal status colors; click another node to begin a new pair or choose **Cancel route** to restore the full network.
+* **Route Component Details**: The route panel lists each available path and its belt/node risk scores. Belt occupancy is aggregate telemetry and cannot identify or follow a specific package from node to node.
 * **Active Issues Queue**: The right-hand panel lists every jammed directed track in the current snapshot, including its fault reason and active bag count. A warning badge marks each jammed track on the network map; issues remain listed even if an edge cannot be mapped.
+* **Moving Packages**: The playback bar counts bags on operational belts in the current snapshot. The count is network-wide and remains unchanged when a route is isolated or display filters are used; bags on jammed belts are excluded.
+* **Display Filters**: Use **Nodes** to toggle individual node emphasis. Disabled nodes and their connected belts/bags are dimmed, while issue and priority queues remain global. **Show belts** hides belt lines and their bag markers only; it does not change the simulation, package count, or alerts.
+* **Predictive Priority**: The separate priority queue ranks operational belts and nodes by a 0–100 heuristic. Belt risk is the maximum of wear proximity to the layout threshold, projected wear within the next 60 ticks based on recent cumulative-volume rate, and congestion pressure (current occupancy or positive occupancy growth). Occupancy pressure scales to 25 points per bag and growth to 50 points per added bag, both capped at 100. A missing or non-positive recent volume trend does not produce a wear time estimate unless the threshold is already reached. Node scores combine adjacent operational belt risks (60% maximum, 40% average). Amber tracks and node rings identify components at or above the warning threshold.
+* **Causal Warnings Only**: Scores and wear estimates use current and earlier snapshots only and never read the scenario's future fault schedule. They indicate relative risk, not probabilities or guaranteed predictions; sudden random or scheduled breakdowns cannot be predicted from this telemetry alone. Active jams remain in the separate issue queue.
 * **Visual Status Legend**:
     * **Crimson tracks and `!` badges**: Conveyor segments currently experiencing active jams.
+    * **Amber tracks, score labels, and node rings**: High-risk components that may need attention before a jam.
+    * **Status-colored paths**: Open and blocked directed paths for the selected node pair; jammed portions remain crimson.
     * **Safety orange tracks and bag markers**: Active lines carrying baggage.
     * **Charcoal tracks**: Idle, empty conveyor lines.
+    * **Gray nodes and connected tracks**: Components dimmed with the node display filters.
 * **Responsive Network Map**: The network scales to the available window while preserving the original node layout and directional lane offsets.
